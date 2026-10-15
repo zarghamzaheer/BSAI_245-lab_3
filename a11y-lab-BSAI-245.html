@@ -1,0 +1,326 @@
+<!doctype html>
+<!-- Student project: Web Accessibility (WCAG 2.1 AA). lang helps screen readers pick a voice (SC 3.1.1) -->
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A11y Lab: my WCAG 2.1 practice project</title>
+<style>
+/* I keep all colors in variables so I only check contrast once per theme */
+:root{--bg:#eef3f1;--fg:#1b2a3a;--card:#fff;--mut:#41505f;--ac:#1f5fbf;--acfg:#fff;--bd:#5c6b7a;--hl:#ffe45c;--ok:#0a6b2e;--bad:#a4170f}
+:root[data-theme=dark]{--bg:#101820;--fg:#e8eef4;--card:#18232e;--mut:#b3bfcb;--ac:#8ab8ff;--acfg:#08203f;--bd:#8a98a6;--hl:#7a6a00;--ok:#6fdc96;--bad:#ff9a92}
+:root[data-theme=contrast]{--bg:#000;--fg:#fff;--card:#000;--mut:#fff;--ac:#ffee00;--acfg:#000;--bd:#fff;--hl:#333;--ok:#00ff7f;--bad:#ff7b72}
+*{box-sizing:border-box}
+body{margin:0;font:1rem/1.6 system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);
+ background-image:linear-gradient(var(--bd) 1px,transparent 1px);background-size:100% 2rem;background-blend-mode:soft-light}
+[hidden]{display:none!important}
+/* visible focus on everything (SC 2.4.7) */
+:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+.skip{position:absolute;left:.5rem;top:-4rem;background:var(--ac);color:var(--acfg);padding:.7rem 1rem;z-index:9}
+.skip:focus{top:.5rem}
+header,main,footer{max-width:60rem;margin:0 auto;padding:1rem}
+h1{font:700 2.2rem/1.2 "Trebuchet MS",system-ui,sans-serif;margin:.2rem 0}
+h1 mark{background:var(--hl);color:var(--fg);padding:0 .3em}
+h2{font-size:1.5rem;margin:.5rem 0 1rem}h3{font-size:1.15rem;margin:.2rem 0 .5rem}
+p,li{max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.card{background:var(--card);border:2px solid var(--bd);border-radius:6px;padding:1rem;margin:1rem 0}
+.me{border-style:dashed}
+button,select,input[type=text],input[type=email],input[type=color],textarea{font:inherit;min-height:2.75rem}
+button{background:var(--card);color:var(--fg);border:2px solid var(--bd);border-radius:4px;padding:.4rem 1rem;cursor:pointer}
+button.btn,[role=tab][aria-selected=true]{background:var(--ac);color:var(--acfg);border-color:var(--ac);font-weight:700}
+[role=tablist]{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:1rem;border-bottom:3px solid var(--bd);padding-bottom:.3rem}
+input[type=text],input[type=email],select,textarea{background:var(--card);color:var(--fg);border:2px solid var(--bd);border-radius:4px;padding:.4rem .6rem}
+textarea{width:100%;min-height:6rem}
+input[type=checkbox],input[type=radio]{width:1.3rem;height:1.3rem;vertical-align:middle}
+.field{margin:.75rem 0}.field label{display:block;font-weight:600}
+.err{color:var(--bad);font-weight:600}
+.toast{min-height:2.75rem;border:2px dashed var(--bd);padding:.5rem;margin-top:.75rem}
+.acc button{display:block;width:100%;text-align:left}
+.acc [role=region]{padding:.75rem;border:2px solid var(--bd);border-top:0}
+dialog{background:var(--card);color:var(--fg);border:3px solid var(--fg);max-width:26rem}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+pre{background:var(--card);border:2px solid var(--bd);padding:.75rem;white-space:pre-wrap;overflow-x:auto}
+code{font-family:ui-monospace,Consolas,monospace}
+.pv{padding:1rem;border:2px solid var(--bd);margin:.75rem 0}
+fieldset{border:2px solid var(--bd);margin:.75rem 0;border-radius:4px}
+progress{width:100%;height:1.2rem}
+.wrap{overflow:auto;border:2px solid var(--bd);background:var(--card);padding:.5rem}
+/* sample shop: fixed light colors so before/after compare fairly in any theme */
+.sm{background:#fff;color:#111;padding:1rem}
+.sm.bad{width:520px;font-size:14px}
+.bad .lc{color:#aaa}.bad a{color:#7ab}.bad *:focus{outline:none}
+.bad .clk{display:inline-block;background:#2b7a82;color:#fff;padding:8px 14px;cursor:pointer}
+.bad input{border:1px solid #ddd;padding:6px}.bad .redb{border:2px solid #d33}.bad td{border:1px solid #ccc;padding:4px}
+.sm.good p{color:#444}.sm.good a{color:#0a4fa3}
+.sm.good button{background:#0b5c63;color:#fff;border:2px solid #0b5c63}
+.sm.good input{border:2px solid #555;background:#fff;color:#111}
+.sm.good label{display:block;font-weight:600}.sm.good .er{color:#a4170f;font-weight:600}
+.sm.good :focus-visible{outline:3px solid #0a4fa3}
+.sm.good td,.sm.good th{border:1px solid #555;padding:.3em}
+.sm.good img{max-width:100%;height:auto}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{[role=tablist],.skip,.noprint{display:none!important}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<header>
+ <h1>A11y <mark>Lab</mark></h1>
+ <p>My class project: practice keyboard use, test colour contrast and fix a broken page for WCAG 2.1 AA.</p>
+ <div class="card me">
+  <div class="row">
+   <div><label for="who">My name</label><br><input type="text" id="who" autocomplete="name" placeholder="Type your name"></div>
+   <div><label for="course">Course</label><br><input type="text" id="course" placeholder="e.g. Web Design 101"></div>
+   <div><label for="theme">Theme</label><br><select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="contrast">High contrast</option></select></div>
+  </div></div>
+ <div role="tablist" aria-label="Lab modules" id="maintabs">
+  <button role="tab" id="t1" aria-controls="p1" aria-selected="true">Keyboard and ARIA</button>
+  <button role="tab" id="t2" aria-controls="p2" aria-selected="false" tabindex="-1">Contrast checker</button>
+  <button role="tab" id="t3" aria-controls="p3" aria-selected="false" tabindex="-1">Fix the page</button>
+  <button role="tab" id="t4" aria-controls="p4" aria-selected="false" tabindex="-1">Quiz and report</button>
+ </div>
+</header>
+
+<main id="main" tabindex="-1">
+<!-- ===== Module 1 ===== -->
+<section role="tabpanel" id="p1" aria-labelledby="t1">
+ <h2>Keyboard and screen reader practice</h2>
+ <p>Try these with the keyboard only. Native HTML first; ARIA only when HTML can't do the job.</p>
+
+ <div class="card"><h3>Tabs</h3>
+  <p>Tab onto the module tabs above, then use Left, Right, Home and End. I used <code>role=tablist</code>, <code>aria-selected</code> and a roving <code>tabindex</code>.</p></div>
+
+ <div class="card"><h3>Accordion</h3>
+  <div class="acc">
+   <button id="ah1" aria-expanded="false" aria-controls="ap1">What is a focus indicator?</button>
+   <div id="ap1" role="region" aria-labelledby="ah1" hidden>The outline that shows where keyboard focus is (SC 2.4.7).</div>
+   <button id="ah2" aria-expanded="false" aria-controls="ap2">Why use a real button?</button>
+   <div id="ap2" role="region" aria-labelledby="ah2" hidden>Buttons get focus, Enter, Space and a role for free (SC 2.1.1, 4.1.2).</div>
+  </div></div>
+
+ <div class="card"><h3>Dialog</h3>
+  <p>The native <code>&lt;dialog&gt;</code> with <code>showModal()</code> traps focus and closes on Esc. I send focus back to the button after.</p>
+  <button class="btn" id="openDlg">Open dialog</button>
+  <dialog id="dlg" aria-labelledby="dt"><h4 id="dt">Confirm</h4><p>Focus stays inside until you close this.</p><button class="btn" id="closeDlg">Close</button></dialog></div>
+
+ <div class="card"><h3>Form with error summary</h3>
+  <p>Submit it empty. Focus jumps to the summary and each link goes to its field.</p>
+  <div id="esum" class="err" tabindex="-1" hidden></div>
+  <form id="frm" novalidate>
+   <div class="field"><label for="fname">Name (required)</label><input id="fname" type="text" aria-required="true" aria-describedby="fname-err"><div id="fname-err" class="err"></div></div>
+   <div class="field"><label for="femail">Email (required)</label><input id="femail" type="email" aria-required="true" aria-describedby="femail-err"><div id="femail-err" class="err"></div></div>
+   <button class="btn" type="submit">Send</button></form>
+  <div id="status" class="toast" role="status"></div></div>
+
+ <div class="card"><h3>Key log</h3>
+  <p>Shows each key and the focused element so I can check focus order (SC 2.4.3).</p>
+  <ol id="klog" aria-label="Recent key presses"></ol></div>
+</section>
+
+<!-- ===== Module 2 ===== -->
+<section role="tabpanel" id="p2" aria-labelledby="t2" hidden>
+ <h2>Contrast checker</h2>
+ <div class="card">
+  <div class="row">
+   <div><label for="fgc">Text colour</label><br><input type="color" id="fgc" value="#767676"> <input type="text" id="fgh" value="#767676" aria-label="Text colour hex" size="8"></div>
+   <div><label for="bgc">Background colour</label><br><input type="color" id="bgc" value="#ffffff"> <input type="text" id="bgh" value="#ffffff" aria-label="Background colour hex" size="8"></div>
+  </div>
+  <p><strong>Ratio: <span id="ratio"></span>:1</strong> (rounded down, never up)</p>
+  <ul id="results"></ul>
+  <div class="pv" id="pv"><p style="margin:0">Normal text sample</p><p style="margin:0;font-size:1.5rem">Large text sample (24px)</p></div>
+  <button id="sugg">Suggest a passing text colour</button> <span id="sugout" role="status"></span>
+  <p>Large text = 24px regular or 18.66px bold. The suggestion blends towards black or white so the hue stays similar.</p></div>
+ <div class="card"><h3>Text size and spacing</h3>
+  <div class="row"><label for="zoom">Text size <output id="zo">100%</output></label><input type="range" id="zoom" min="100" max="300" step="25" value="100">
+  <label><input type="checkbox" id="sp"> Text spacing (SC 1.4.12)</label></div>
+  <div class="pv" id="zs"><p>Resize the text and turn on spacing: nothing should be cut off or overlap. Also test with real browser zoom (SC 1.4.4 and 1.4.10).</p></div></div>
+</section>
+
+<!-- ===== Module 3 ===== -->
+<section role="tabpanel" id="p3" aria-labelledby="t3" hidden>
+ <h2>Fix the page</h2>
+ <fieldset><legend>View</legend>
+  <label><input type="radio" name="view" value="b" checked> Before</label>
+  <label><input type="radio" name="view" value="a"> After</label></fieldset>
+ <div id="wb" class="wrap"></div><div id="wa" class="wrap" hidden></div>
+ <p id="prog" role="status"></p><progress id="pbar" max="8" value="0" aria-label="Issues found"></progress>
+ <h3>Issues I can find</h3><div id="issues"></div>
+</section>
+
+<!-- ===== Module 4 ===== -->
+<section role="tabpanel" id="p4" aria-labelledby="t4" hidden>
+ <h2>Quiz and report</h2>
+ <div class="card"><h3>Quick quiz</h3><div id="quiz"></div><p id="qscore" role="status"></p></div>
+ <div class="card"><h3>What I learned</h3>
+  <label for="notes">My notes (saved in this browser)</label>
+  <textarea id="notes"></textarea></div>
+ <div class="row noprint"><button class="btn" id="gen">Make my report</button><button id="cpy">Copy report</button><button id="prt">Print</button></div>
+ <pre id="rep" tabindex="-1">Press "Make my report" to build a summary.</pre><p id="cpst" role="status"></p>
+</section>
+</main>
+<footer><p>This is a learning tool. It cannot replace testing with real screen readers like NVDA or VoiceOver.</p></footer>
+
+<script>
+// small helpers so I don't type document.querySelector all day
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=h=>String(h).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// storage can fail (private mode) so I wrap it
+const save=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const load=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+
+// ----- theme -----
+const ts=$('#theme');
+ts.value=load('theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+const setTheme=()=>{document.documentElement.dataset.theme=ts.value;save('theme',ts.value)};
+setTheme();ts.onchange=setTheme;
+['who','course'].forEach(id=>{$('#'+id).value=load(id);$('#'+id).oninput=e=>save(id,e.target.value)});
+
+// ----- tabs (arrow keys move, only the active tab is a tab stop) -----
+const tabs=$$('[role=tab]');
+function pick(t){tabs.forEach(x=>{const on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;$('#'+x.getAttribute('aria-controls')).hidden=!on})}
+tabs.forEach(t=>t.onclick=()=>pick(t));
+$('#maintabs').onkeydown=e=>{
+ const i=tabs.indexOf(document.activeElement);if(i<0)return;let n=-1;
+ if(e.key==='ArrowRight')n=(i+1)%tabs.length;
+ if(e.key==='ArrowLeft')n=(i-1+tabs.length)%tabs.length;
+ if(e.key==='Home')n=0;if(e.key==='End')n=tabs.length-1;
+ if(n>-1){e.preventDefault();tabs[n].focus();pick(tabs[n])}};
+
+// live region: clear first so the same message is announced again
+function say(m){const s=$('#status');s.textContent='';setTimeout(()=>s.textContent=m,60)}
+
+// ----- accordion -----
+$$('.acc button').forEach(b=>b.onclick=()=>{
+ const open=b.getAttribute('aria-expanded')==='true';
+ b.setAttribute('aria-expanded',String(!open));$('#'+b.getAttribute('aria-controls')).hidden=open});
+
+// ----- dialog -----
+const dlg=$('#dlg'),openBtn=$('#openDlg');
+openBtn.onclick=()=>dlg.showModal();
+$('#closeDlg').onclick=()=>dlg.close();
+dlg.addEventListener('close',()=>openBtn.focus());
+
+// ----- form: errors are text, linked to fields, and summarised -----
+$('#frm').onsubmit=e=>{
+ e.preventDefault();const errs=[];
+ [['fname','Enter your name.'],['femail','Enter an email like name@example.com.']].forEach(([id,msg])=>{
+  const f=$('#'+id),ok=f.value.trim()&&(id!=='femail'||/^\S+@\S+\.\S+$/.test(f.value));
+  f.setAttribute('aria-invalid',String(!ok));
+  $('#'+id+'-err').textContent=ok?'':'Error: '+msg;
+  if(!ok)errs.push([id,msg])});
+ const sum=$('#esum');
+ if(errs.length){
+  sum.innerHTML='<h4>'+errs.length+' problem(s) to fix</h4><ul>'+errs.map(([id,m])=>'<li><a href="#'+id+'">'+esc(m)+'</a></li>').join('')+'</ul>';
+  sum.hidden=false;sum.focus();
+ }else{sum.hidden=true;say('Form sent.')}};
+$('#esum').onclick=e=>{if(e.target.tagName==='A'){e.preventDefault();$(e.target.getAttribute('href')).focus()}};
+
+// ----- key log -----
+document.addEventListener('keydown',e=>{
+ const el=document.activeElement,li=document.createElement('li'),log=$('#klog');
+ li.textContent=e.key+' on <'+el.tagName.toLowerCase()+'> '+(el.textContent||el.id||'').trim().slice(0,24);
+ log.prepend(li);while(log.children.length>6)log.lastChild.remove();
+ // the Before sample has a deliberate keyboard trap (SC 2.1.2); Esc is the way out
+ if(el.classList.contains('trap')){if(e.key==='Tab')e.preventDefault();if(e.key==='Escape')el.blur()}});
+
+// ----- contrast maths from the WCAG definition -----
+function norm(h){h=h.trim();if(/^#[0-9a-f]{3}$/i.test(h))h='#'+[...h.slice(1)].map(c=>c+c).join('');return /^#[0-9a-f]{6}$/i.test(h)?h.toLowerCase():null}
+function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function ratio(a,b){const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+function mix(h,t,p){return'#'+[1,3,5].map(i=>Math.round(parseInt(h.slice(i,i+2),16)*(1-p)+t*p).toString(16).padStart(2,'0')).join('')}
+function suggest(fg,bg,t){
+ if(ratio(fg,bg)>=t)return fg;
+ const to=lum(bg)>.179?0:255; // go darker on light backgrounds, lighter on dark ones
+ for(let k=1;k<=100;k++){const c=mix(fg,to,k/100);if(ratio(c,bg)>=t)return c}
+ return to?'#ffffff':'#000000'}
+const TESTS=[['Normal text AA',4.5],['Large text AA',3],['UI parts AA (SC 1.4.11)',3],['Normal text AAA',7],['Large text AAA',4.5]];
+function link(pk,tx){$('#'+pk).oninput=e=>{$('#'+tx).value=e.target.value;upd()};
+ $('#'+tx).oninput=e=>{const n=norm(e.target.value);if(n){$('#'+pk).value=n;upd()}}}
+link('fgc','fgh');link('bgc','bgh');
+function upd(){
+ const f=norm($('#fgh').value),b=norm($('#bgh').value);if(!f||!b)return;
+ const r=ratio(f,b);$('#ratio').textContent=(Math.floor(r*100)/100).toFixed(2);
+ // pass/fail uses a symbol AND a word, never colour alone (SC 1.4.1)
+ $('#results').innerHTML=TESTS.map(([n,t])=>'<li>'+(r>=t?'\u2714 Pass':'\u2716 Fail')+': '+n+' (needs '+t+':1)</li>').join('');
+ $('#pv').style.cssText='color:'+f+';background:'+b}
+upd();
+$('#sugg').onclick=()=>{
+ const f=norm($('#fgh').value),b=norm($('#bgh').value);
+ if(!f||!b){$('#sugout').textContent='Enter two valid hex colours first.';return}
+ const s=suggest(f,b,4.5);$('#fgh').value=s;$('#fgc').value=s;upd();$('#sugout').textContent='Text colour set to '+s+'.'};
+function zoomUpdate(){$('#zo').textContent=$('#zoom').value+'%';$('#zs').style.fontSize=$('#zoom').value/100+'rem';
+ $('#zs').style.cssText+=$('#sp').checked?';line-height:1.5;letter-spacing:.12em;word-spacing:.16em':''}
+$('#zoom').oninput=zoomUpdate;$('#sp').onchange=()=>{$('#zs').removeAttribute('style');zoomUpdate()};
+
+// ----- sample shop page: the Before has 8 problems, the After fixes them -----
+const IMG="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='80' height='60' fill='%23c8a27a'/%3E%3C/svg%3E";
+function sample(good,p){
+ const add="document.getElementById('"+p+"st').textContent='Added to cart'";
+ if(good)return'<div class="sm good"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Brew &amp; Bean</h2><button type="button" aria-label="Search">\uD83D\uDD0D</button></div>'
+ +'<h3>Our beans</h3><img src="'+IMG+'" alt="Bag of medium-roast Ethiopian beans" width="80" height="60">'
+ +'<p>Small-batch coffee. <a href="#" onclick="return false">Read our roasting guide</a></p>'
+ +'<button type="button" onclick="'+add+'">Add to cart</button> <span id="'+p+'st" role="status"></span>'
+ +'<form onsubmit="return false"><label for="'+p+'e">Email</label><input id="'+p+'e" type="email" aria-invalid="true" aria-describedby="'+p+'ee" value="bob@"><span id="'+p+'ee" class="er">\u26A0 Error: enter a full email address.</span></form>'
+ +'<table><caption>Prices</caption><thead><tr><th scope="col">Bag</th><th scope="col">Price</th></tr></thead><tbody><tr><td>250 g</td><td>$9</td></tr></tbody></table></div>';
+ return'<div class="sm bad"><div style="display:flex;justify-content:space-between"><h2>Brew &amp; Bean</h2><button type="button">\uD83D\uDD0D</button></div>'
+ +'<h5>Our beans</h5><img src="'+IMG+'">'
+ +'<p class="lc">Small-batch coffee. To learn more <a href="#" onclick="return false" tabindex="5">click here</a></p>'
+ +'<div class="clk" onclick="'+add+'">Add to cart</div><span id="'+p+'st"></span>'
+ +'<form onsubmit="return false"><input class="redb" placeholder="Email" value="bob@"><br><br><input class="trap" value="Tab is trapped here. Press Esc."></form>'
+ +'<table><tr><td>Bag</td><td>Price</td></tr><tr><td>250 g</td><td>$9</td></tr></table></div>'}
+$('#wb').innerHTML=sample(false,'b');$('#wa').innerHTML=sample(true,'a');
+$$('input[name=view]').forEach(r=>r.onchange=()=>{const v=$('input[name=view]:checked').value;$('#wb').hidden=v==='a';$('#wa').hidden=v==='b'});
+
+// issue: [title, SC, level, how to spot it, fix]
+const IS=[
+['Low-contrast text','1.4.3','AA','Grey #aaa on white is only about 2.3:1.','Use 4.5:1 or more for normal text.'],
+['Image without alt','1.1.1','A','A screen reader may read the file name.','Add a short alt, or alt="" if decorative.'],
+['Clickable div','2.1.1','A','Press Tab: the "button" never gets focus.','Use a real <button>.'],
+['Placeholder instead of label','3.3.2','A','The hint vanishes when typing and nothing names the field.','Add a visible <label for>.'],
+['Error shown by colour only','1.4.1','A','Only a red border marks the problem.','Add error text and an icon, linked with aria-describedby.'],
+['No focus outline','2.4.7','AA','Tab through and you can\'t see where you are.','Remove outline:none or give a clear replacement.'],
+['Vague link text ("click here")','2.4.4','A','A links list reads "click here" with no meaning.','Name the destination.'],
+['Keyboard trap','2.1.2','A','Tab in the last field never leaves.','Never block Tab without an exit.']];
+$('#issues').innerHTML=IS.map((x,i)=>'<article class="card"><h4>'+(i+1)+'. '+esc(x[0])+'</h4><p>SC '+x[1]+' (Level '+x[2]+')</p>'
+ +'<label><input type="checkbox" class="fnd"> Found<span style="position:absolute;left:-9999px">: '+esc(x[0])+'</span></label>'
+ +'<details><summary>How to spot it and fix it</summary><p><strong>Spot:</strong> '+esc(x[3])+'</p><p><strong>Fix:</strong> '+esc(x[4])+'</p></details></article>').join('');
+function prog(){const n=$$('.fnd:checked').length;$('#prog').textContent=n+' of '+IS.length+' issues found';$('#pbar').value=n}
+$('#issues').onchange=prog;prog();
+
+// ----- quiz -----
+const Q=[
+['What is the minimum contrast for normal text at level AA?',['3:1','4.5:1','7:1'],1],
+['Which element should you use for something clickable?',['<div onclick>','<span>','<button>'],2],
+['What does alt="" tell a screen reader?',['Read the file name','Skip this decorative image','The image is broken'],1],
+['Which key should always let you leave a widget (SC 2.1.2)?',['Tab or Esc','F5','Caps Lock'],0],
+['Is colour alone enough to show an error?',['Yes','No, add text or an icon'],1]];
+let score=0,done=0;
+$('#quiz').innerHTML=Q.map((q,i)=>'<fieldset><legend>'+(i+1)+'. '+esc(q[0])+'</legend>'
+ +q[1].map((o,j)=>'<label><input type="radio" name="q'+i+'" value="'+j+'"> '+esc(o)+'</label><br>').join('')
+ +'<p id="fb'+i+'" role="status"></p></fieldset>').join('');
+$('#quiz').onchange=e=>{
+ const i=+e.target.name.slice(1),right=+e.target.value===Q[i][2];
+ $('#fb'+i).textContent=right?'\u2714 Correct':'\u2716 Not quite. Answer: '+Q[i][1][Q[i][2]];
+ score=Q.filter((q,k)=>{const c=$('input[name=q'+k+']:checked');return c&&+c.value===q[2]}).length;
+ done=Q.filter((q,k)=>$('input[name=q'+k+']:checked')).length;
+ $('#qscore').textContent='Score: '+score+' of '+Q.length+' ('+done+' answered)'};
+
+// ----- notes and report -----
+$('#notes').value=load('notes');$('#notes').oninput=e=>save('notes',e.target.value);
+function report(){
+ return['A11y Lab report','Name: '+($('#who').value||'(not entered)'),'Course: '+($('#course').value||'(not entered)'),
+ 'Date: '+new Date().toLocaleDateString(),'',
+ 'Issues found: '+$$('.fnd:checked').length+' of '+IS.length,
+ 'Quiz: '+score+' of '+Q.length+' ('+done+' answered)','',
+ 'What I learned:',$('#notes').value||'(no notes yet)','',
+ 'Reminder: automated tools catch only some problems. Always test by hand too.'].join('\n')}
+$('#gen').onclick=()=>{const r=$('#rep');r.textContent=report();r.focus()};
+$('#cpy').onclick=async()=>{
+ const t=report();$('#rep').textContent=t;
+ try{await navigator.clipboard.writeText(t);$('#cpst').textContent='Report copied.'}
+ catch(e){$('#cpst').textContent='Copy was blocked. Select the text and copy it by hand.'}};
+$('#prt').onclick=()=>{$('#rep').textContent=report();window.print()};
+</script>
+</body>
+</html>
